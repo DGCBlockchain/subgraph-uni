@@ -27,7 +27,9 @@ export function handlePairCreated(event: PairCreated): void {
   entity.token1 = event.params.token1
 
   // Entities can be written to the store with `.save()`
-  entity.save()
+  entity.save();
+  
+
 
   // Note: If a handler doesn't require existing field values, it is faster
   // _not_ to load the entity from the store. Instead, create it fresh with
