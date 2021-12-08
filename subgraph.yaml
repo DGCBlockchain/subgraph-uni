@@ -15,18 +15,22 @@ dataSources:
       kind: ethereum/events
       apiVersion: 0.0.5
       language: wasm/assemblyscript
+      file: ./src/factory.ts
       entities:
-        - TokenPair
+        - Pair
+        - Token
       abis:
         - name: UniswapFactory
           file: ./abis/UniswapFactory.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: ERC20SymbolBytes
+          file: ./abis/ERC20SymbolBytes.json
+        - name: ERC20NameBytes
+          file: ./abis/ERC20NameBytes.json
       eventHandlers:
         - event: PairCreated(indexed address,indexed address,address,uint256)
           handler: handlePairCreated
-      callHandlers:
-        - function: createPair(address,address)
-          handler: handleCreatePair
-      file: ./src/mapping.ts
 templates:
   - name: LiquidityPoolPair
     kind: ethereum/contract
@@ -44,14 +48,16 @@ templates:
       abis:
         - name: V2Pair
           file: ./abis/V2Pair.json
+        - name: UniswapFactory
+          file: ./abis/UniswapFactory.json
       eventHandlers:
-        - event: Mint(indexed address,uint256,uint256)
-          handler: handleMint
-        - event: Burn(indexed address,uint256,uint256,indexed address)
-          handler: handleBurn
+        # - event: Mint(indexed address,uint256,uint256)
+        #   handler: handleMint
+        # - event: Burn(indexed address,uint256,uint256,indexed address)
+        #   handler: handleBurn
         - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
           handler: handleSwap
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
-        - event: Sync(uint112,uint112)
-          handler: handleSync
+        # - event: Sync(uint112,uint112)
+        #   handler: handleSync

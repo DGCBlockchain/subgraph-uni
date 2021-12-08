@@ -1,11 +1,3 @@
-type TokenPair @entity {
-  id: ID!
-  count: BigInt!
-  token0: Bytes! # address
-  token1: Bytes! # address
-}
-
-
 type UniswapFactory @entity {
   # factory address
   id: ID!
@@ -100,8 +92,8 @@ type Pair @entity {
   # pairHourData: [PairHourData!]! @derivedFrom(field: "pair")
   liquidityPositions: [LiquidityPosition!]! @derivedFrom(field: "pair")
   liquidityPositionSnapshots: [LiquidityPositionSnapshot!]! @derivedFrom(field: "pair")
-  mints: [Mint!]! @derivedFrom(field: "pair")
-  burns: [Burn!]! @derivedFrom(field: "pair")
+  # mints: [Mint!]! @derivedFrom(field: "pair")
+  # burns: [Burn!]! @derivedFrom(field: "pair")
   swaps: [Swap!]! @derivedFrom(field: "pair")
 }
 
@@ -164,8 +156,8 @@ type Transaction @entity {
   # This is not the reverse of Mint.transaction; it is only used to
   # track incomplete mints (similar for burns and swaps)
   # mints: [Mint]!
-  burns: [Burn]!
-  swaps: [Swap]!
+  # burns: [Burn]!
+  # swaps: [Swap!]
 }
 
 # TODO: get rid of errors when running codegen
