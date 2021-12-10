@@ -1,56 +1,66 @@
-import { BigInt } from "@graphprotocol/graph-ts"
+import { BigInt, DataSourceTemplate } from "@graphprotocol/graph-ts";
 import {
-  FACTORY_ADDRESS
-} from './helpers'
-import { PairCreated } from '../generated/UniswapFactory/UniswapFactory'
-import { TokenPair, UniswapFactory } from "../generated/schema"
+  FACTORY_ADDRESS,
+  ZERO_BD,
+  ZERO_BI
+} from './helpers';
+import { PairCreated } from '../generated/UniswapFactory/UniswapFactory';
+import { UniswapFactory, Bundle, Token, Pair } from "../generated/schema";
+import { V2Pair as PairTemplate } from "../generated/templates";
+
 
 export function handlePairCreated(event: PairCreated): void {
-  // Entities can be loaded from the store using a string ID; this ID
-  // needs to be unique across all entities of the same type
-  let entity = TokenPair.load(event.transaction.from.toHex())
-  let factory = UniswapFactory.load(FACTORY_ADDRESS)
 
-  // Entities only exist after they have been saved to the store;
-  // `null` checks allow to create entities on demand
-  if (!entity) {
-    entity = new TokenPair(event.transaction.from.toHex())
+  let factory = UniswapFactory.load(FACTORY_ADDRESS);
+  if (factory === null) {
+    factory = new UniswapFactory(FACTORY_ADDRESS)
+    factory.pairCount = 0
+    factory.totalVolumeETH = ZERO_BD
+    factory.totalLiquidityETH = ZERO_BD
+    factory.totalVolumeUSD = ZERO_BD
+    factory.untrackedVolumeUSD = ZERO_BD
+    factory.totalLiquidityUSD = ZERO_BD
+    factory.txCount = ZERO_BI
 
-    // Entity fields can be set using simple assignments
-    entity.count = BigInt.fromI32(0)
+    // create new bundle
+    let bundle = new Bundle('1')
+    bundle.ethPrice = ZERO_BD;
+    bundle.save();
+  }
+  factory.pairCount = factory.pairCount + 1;
+  factory.save();
+
+  // create the tokens
+  let token0 = Token.load(event.params.token0.toHexString());
+  let token1 = Token.load(event.params.token1.toHexString());
+
+  if (token0 === null) {
+    token0 = new Token(event.params.token0.toHexString());
   }
 
-  // BigInt and BigDecimal math are supported
-  entity.count = BigInt.fromI32(1).plus(entity.count)
+  if (token1 === null) {
+    token1 = new Token(event.params.token1.toHexString());
+  }
 
-  // Entity fields can be set based on event parameters
-  entity.token0 = event.params.token0
-  entity.token1 = event.params.token1
+  let pair = new Pair(event.params.pair.toHexString()) as Pair;
+  pair.token0 = token0.id;
+  pair.token1 = token1.id;
 
-  // Entities can be written to the store with `.save()`
-  entity.save();
+  pair.liquidityProviderCount = ZERO_BI;
+  pair.createdAtTimestamp = event.block.timestamp;
+  pair.createdAtBlockNumber = event.block.number;
+
+  pair.token0Price = ZERO_BD;
+  pair.token1Price = ZERO_BD;
+
+  // create the tracked contract based on the template
+  PairTemplate.create(event.params.pair);
   
+  // save updated values
+  token0.save()
+  token1.save()
+  pair.save();
+  factory.save();
 
 
-  // Note: If a handler doesn't require existing field values, it is faster
-  // _not_ to load the entity from the store. Instead, create it fresh with
-  // `new Entity(...)`, set the fields that should be updated and save the
-  // entity back to the store. Fields that were not set or unset remain
-  // unchanged, allowing for partial updates to be applied.
-
-  // It is also possible to access smart contracts from mappings. For
-  // example, the contract that has emitted the event can be connected to
-  // with:
-  //
-  // let contract = Contract.bind(event.address)
-  //
-  // The following functions can then be called on this contract to access
-  // state variables and other data:
-  //
-  // - contract.allPairs(...)
-  // - contract.allPairsLength(...)
-  // - contract.createPair(...)
-  // - contract.feeTo(...)
-  // - contract.feeToSetter(...)
-  // - contract.getPair(...)
 }

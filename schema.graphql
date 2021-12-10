@@ -160,4 +160,11 @@ type Transaction @entity {
   # swaps: [Swap!]
 }
 
+
+# stores for USD calculations
+type Bundle @entity {
+  id: ID!
+  ethPrice: BigDecimal! # price of ETH usd
+}
+
 # TODO: get rid of errors when running codegen
